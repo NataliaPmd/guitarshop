@@ -9,6 +9,10 @@ function App() {
     const [data, setData] = useState(db)
     const [cart, setCart] = useState([])
 
+    const MAX_ITEMS = 5
+    const MIN_ITEMS = 1
+
+
     //API
     // const [data, setData] = useState([])
     // useEffect(() => {
@@ -16,13 +20,65 @@ function App() {
     // }, [])
 
     function addToCart(item) {
-        setCart(prevCart => [...prevCart, item])
+
+        const itemExists = cart.findIndex((guitar) => guitar.id === item.id)
+        if(itemExists >= 0) {
+            if(cart[itemExists].quantity >= MAX_ITEMS) return
+            const updatedCart = [...cart]
+            updatedCart[itemExists].quantity++
+            setCart(updatedCart);
+        } else {
+            item.quantity = 1
+            setCart(prevCart => [...prevCart, item])
+        }
 
     }
+
+    function removeFromCart(id) {
+        setCart(prevCart => prevCart.filter(guitar=> guitar.id != id))
+    }
+
+    function increaseQuantity(id) {
+        const UpdatedCart = cart.map( item => {
+            if(item.id === id && item.quantity < MAX_ITEMS) {
+                return {
+                    ...item,
+                    quantity: item.quantity + 1
+                }
+            }
+            return item
+        })
+
+        setCart(UpdatedCart)
+    }
+
+    function decreaseQuantity(id) {
+        const UpdatedCart = cart.map( item => {
+            if(item.id === id && item.quantity > MIN_ITEMS) {
+                return {
+                    ...item,
+                    quantity: item.quantity - 1
+                }
+            }
+            return item
+        })
+
+        setCart(UpdatedCart)
+    }
   
+    function deleteCart() {
+        setCart([])
+    }
+
     return (
         <>
-        <Header/>
+        <Header 
+            cart={cart}
+            removeFromCart={removeFromCart}
+            increaseQuantity={increaseQuantity}
+            decreaseQuantity={decreaseQuantity}
+            deleteCart={deleteCart}
+        />
         <main className="container-xl mt-5">
             <h2 className="text-center">Nuestra Colección</h2>
 
@@ -31,7 +87,6 @@ function App() {
                         <Guitar
                             key={guitar.id}
                             guitar={guitar}
-                            setCart={setCart}
                             addToCart={addToCart}
                         />
                     )
